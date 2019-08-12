@@ -9,12 +9,13 @@ if(isset($_SESSION['success'])){
 }
 if(isset($_SESSION['error'])){
 	$error = $_SESSION['error'];
-	
 	unset($_SESSION['error']);
 }
+
 $username = $_SESSION['user'];
 $connect = mysqli_connect("localhost", "root", "", "onthi");
 mysqli_set_charset($connect,"utf8");
+
 $query ="SELECT a.id,b.ten,a.mota,a.gia,a.hinh FROM product a,category b WHERE a.cate_id=b.id ORDER BY a.ID DESC";  
 $result = mysqli_query($connect, $query);
 
@@ -25,7 +26,12 @@ if(isset($_POST['lammoi'])){
 	header("Refresh:0");
 }
 
-
+if(isset($_GET["sua"])){
+	$suaid = $_GET["id"];
+	$query ="SELECT * FROM product where id='$suaid'";  
+	$result = mysqli_query($connect, $query);
+	$row_sua = mysqli_fetch_array($result);
+}
 
 
 if(isset($_POST['luu'])){
@@ -81,7 +87,7 @@ if(isset($_POST['luu'])){
 	$id = $row["max(id)"]+ 1;
 
 
-	$sql = "insert into product value('$id','$theloai','$mota','$chitiet','$target_file','".str_replace(",", "", $gia)."','".date("y-m-d").date(" h-i-s")."','".date("y-m-d").date(" h-i-s")."')";
+	$sql = "insert into product value('$id','$theloai','$mota','$chitiet','$target_file','".str_replace(",", "", $gia)."','".date("y-m-d").date(" h-i-s")."','".date("y-m-d").date(" h:i:s")."')";
 	$result = mysqli_query($connect, $sql);
 	if(mysqli_affected_rows($connect)==1)
 	{
@@ -93,6 +99,80 @@ if(isset($_POST['luu'])){
 	else
 	{
 		$error = "Lưu thất bại";
+	}
+}
+if(isset($_POST['sua'])){
+	$theloai = $_POST['theloai'];
+	$mota = $_POST['mota'];
+	$chitiet = $_POST['chitiet'];
+	$gia = $_POST['gia'];
+
+	if($_FILES["hinh"]["error"]==0){
+
+		$target_dir = "uploads/";
+		$target_file = $target_dir . date("mdy").date("-his-").basename($_FILES["hinh"]["name"]);
+		$uploadOk = 1;
+		$imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+		$check = getimagesize($_FILES["hinh"]["tmp_name"]);
+		
+
+		if($check !== false) {
+			$uploadOk = 1;
+			// Check file size
+			if ($_FILES["hinh"]["size"] > 5000000) {
+				$error = "File tải lên quá lớn (>5MB)";
+				$uploadOk = 0;
+			}
+			else if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+				&& $imageFileType != "gif" )
+			{
+				$error = "Chỉ được tải lên các file JPG, JPEG, PNG & GIF";
+				$uploadOk = 0;
+			}
+			else if ($uploadOk == 1)
+			{
+				if (move_uploaded_file($_FILES["hinh"]["tmp_name"], $target_file))
+				{
+					$success = "The file ".date("mdy").date("-his-"). basename( $_FILES["hinh"]["name"]). " has been uploaded.";
+				}
+				else
+				{
+					$error = "Sorry, there was an error uploading your file.";
+				}
+			}
+		} else {
+			$error = "File không phải là hình ảnh.";
+			$uploadOk = 0;
+		}
+	}
+	else
+	{
+		$target_file=$row_sua["hinh"];
+	}
+
+	$sql_id = "select max(id) from product";
+	$result = mysqli_query($connect, $sql_id);
+	$row = mysqli_fetch_array($result);
+
+
+
+	$sql = "update product set id='$suaid',cate_id='$theloai',mota='$mota',chitiet='$chitiet',hinh='$target_file',gia='".str_replace(",", "", $gia)."',created_at='".$row_sua["created_at"]."',updated_at='".date("y-m-d").date(" h:i:s")."' where id='$suaid'";
+	$result = mysqli_query($connect, $sql);
+	if(mysqli_affected_rows($connect)==1)
+	{
+		if(isset($row_sua['hinh']) && $row_sua['hinh']!=$target_file)
+		{
+			echo $myFile = $row_sua['hinh'];
+			unlink($myFile);
+		}
+		$success ="Sửa thành công";
+		$_SESSION['success'] = $success;
+		unset($_POST);
+		header("location:admin.php?sua&id=$suaid");
+	}
+	else
+	{
+		$error = "Sửa thất bại";
 	}
 }
 
@@ -181,14 +261,17 @@ if(isset($_POST['luu'])){
 					<tbody>'; 
 					while($row = mysqli_fetch_array($result))  
 					{  
-						echo '  
+						echo '
 						<tr>  
 						<td>'.$row["id"].'</td>  
 						<td>'.$row["ten"].'</td>  
 						<td>'.$row["mota"].'</td>  
 						<td>'.$row["gia"].'</td>  
-						<td>'.$row["hinh"].'</td>  
-						<td><a href="sua.php?id='.$row["id"].'">Sửa</a> 
+						<td><img class="hinh" src="'.$row["hinh"].'" alt="" style="
+						max-width: 50px;
+						max-height: 50px;
+						"></td>  
+						<td><a href="admin.php?sua&id='.$row["id"].'">Sửa</a> 
 						<a href="xoa.php?id='.$row["id"].'">Xoá</a></td>  
 						</tr>  
 						';  
@@ -237,6 +320,57 @@ if(isset($_POST['luu'])){
 					</div>
 					</div>
 					<button type="submit" name="luu"class="btn btn-primary">Lưu</button>
+					<button type="submit" name="lammoi" class="btn btn-secondary">Làm mới</button>
+					</form>
+					</div>
+					';
+				}
+				if(isset($_GET['sua'])){
+
+					echo'
+					<h2 class="table-name">Sửa Sản phẩm</h2>
+					<div class="my-table">
+					<form action="" method="post" enctype="multipart/form-data">
+					<div class="form-group">
+					<h4><strong>Thể Loại</strong></h4>
+					<select class="custom-select" name="theloai" required>
+					<option value="" selected>Thể loại...</option>
+					';
+					while($row = mysqli_fetch_array($result_theloai))  
+					{  
+						echo '<option value="'.$row["id"].'"
+
+						';if($row["id"] == $row_sua["cate_id"]) {
+							echo 'selected';
+						}
+						echo'
+						>'.$row["ten"].'</option>';  
+					}
+					echo'
+					</select>
+					</div>
+					<div class="form-group">
+					<h4><strong>Mô tả</strong></h4>
+					<textarea name="mota" id="editor-mota" rows="10" cols="80" >'.$row_sua['mota'].'</textarea>
+					</div>
+					<div class="form-group">
+					<h4><strong>Chi tiết</strong></h4>
+					<textarea name="chitiet" id="editor-chitiet" rows="10" cols="80" >'.$row_sua['chitiet'].'</textarea>
+					</div>
+					<div class="form-group">
+					<h4><strong>Giá</strong></h4>
+					<input class="form-control" name="gia"  type="text" name="currency-field" id="currency-field" data-type="currency" value="'.$row_sua['gia'].'">
+					</div>
+					<div class="form-group">
+					<h4><strong>Chọn ảnh đại diện</strong></h4>
+					<div class="input-group">
+					<div class="custom-file">
+					<input type="file" class="custom-file-input" id="customFile" name="hinh">
+					<label class="custom-file-label" for="customFile">Chọn file</label>
+					</div>
+					</div>
+					</div>
+					<button type="submit" name="sua"class="btn btn-primary">Sửa</button>
 					<button type="submit" name="lammoi" class="btn btn-secondary">Làm mới</button>
 					</form>
 					</div>
