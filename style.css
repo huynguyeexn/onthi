@@ -1,0 +1,82 @@
+.cke_chrome {
+    margin-left: 1px !important;
+}
+.b-g{
+	background-color: #4CAF50 !important ;
+	border-color:  #4CAF50 !important ;
+}
+.login-form{
+	margin-top: 20px;
+	padding: 20px;
+	border: #999999 solid 1px;
+	border-radius: 0 0 5px 5px;
+}
+.login-header{
+	background-color: #4CAF50;
+	color: white;
+	padding: 20px 20px;
+	margin: -20px -20px 20px -20px;
+}
+.nav-bar{
+	background-color: #FE97A1;
+	color: white;
+	padding: 10px;
+	border-bottom: 1px white solid;
+}
+.side-bar{
+	height: 100%;
+	background-color: #FE97A1;
+}
+.side-bar>ul{
+	margin: 0;
+	padding: 0;
+}
+.side-bar>ul>li{
+	border-bottom:1px white solid;
+	list-style-type: none;
+}
+.side-bar>ul>li>a{
+	padding: 10px;
+	width: 100%;
+	display: block;
+	color: white;
+	
+}
+.side-bar>ul>li>a:hover{
+	text-decoration: none;
+	background-color: #FFCACF;
+}
+.drop-side-bar>ul{
+	margin: 0;
+	padding: 0;
+}
+.drop-side-bar>ul>li{
+	border-top:1px white solid;
+	list-style-type: none;
+}
+.drop-side-bar>ul>li>a{
+	padding: 10px 10px 10px 30px;
+	width: 100%;
+	display: block;
+	color: white;
+	
+}
+.drop-side-bar>ul>li>a:hover{
+	text-decoration: none;
+	background-color: #FFCACF;
+}
+.user-link a{
+	color: white;
+}
+.user-link a:hover{
+	color: #FFB9B9;
+	text-decoration: none;
+}
+.my-table{
+	border: 1px solid #D7D7D7;
+	border-radius: 5px;
+	padding: 10px;
+}
+.table-name{
+	margin: 20px 0;
+}
